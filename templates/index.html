@@ -2,140 +2,262 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>メモ付き電卓</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電卓アプリ</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f4f4; }
-        .calculator { width: 300px; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-right: 20px; }
-        .display { background-color: #eee; padding: 10px; font-size: 2em; text-align: right; border-radius: 4px; margin-bottom: 10px; }
-        .buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(5, 1fr);
-    gap: 10px;
-}
-.buttons .equal {
-    grid-row: 5 / span 2;
-    grid-column: 4;
-}
-.buttons .zero {
-    grid-column: 1 / span 2;
-}
-        .buttons .plus {
-            grid-column: 4 / span 1;
-            grid-row: 3 / span 2;
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
         }
-        .buttons .button {
+        .container {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            max-width: 800px;
             padding: 20px;
-            font-size: 1.2em;
+            box-sizing: border-box;
+        }
+        .calculator {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 320px;
+        }
+        .display {
+            width: 100%;
+            height: 60px;
+            background-color: #e9ecef;
             border: none;
+            border-radius: 8px;
+            text-align: right;
+            padding: 10px 20px;
+            font-size: 2.5em;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .btn {
+            height: 60px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            color: #343a40;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #e9ecef;
+        }
+        .btn.operator {
+            background-color: #ff9f0a;
+            color: white;
+        }
+        .btn.operator:hover {
+            background-color: #f5b041;
+        }
+        .btn.equal {
+            background-color: #007bff;
+            color: white;
+            grid-column: span 2;
+        }
+        .btn.equal:hover {
+            background-color: #0069d9;
+        }
+        .history-section {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 480px;
+        }
+        .history-section h2 {
+            margin-top: 0;
+            color: #343a40;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        #history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #history-list li {
+            padding: 10px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        #history-list li:last-child {
+            border-bottom: none;
+        }
+        #history-list .memo {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+        .memo-input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+	.history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        .history-header h2 {
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+        .btn-clear {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
-            background-color: #e0e0e0;
+            font-size: 0.8em;
         }
-        .buttons .button.operator { background-color: #f0a050; }
-        .buttons .button.equal { background-color: #50a0f0; }
-
-        .memo-input { width: 100%; padding: 8px; margin-top: 10px; box-sizing: border-box; }
-        .history { width: 300px; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .history h2 { margin-top: 0; }
-        .history ul { list-style: none; padding: 0; }
-        .history li { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .btn-clear:hover {
+            background-color: #5a6268;
+        }
     </style>
 </head>
 <body>
-    <div class="calculator">
-        <div class="display" id="display">0</div>
-<div class="buttons">
-    <button class="button" onclick="clearDisplay()">C</button>
-    <button class="button" onclick="appendToDisplay('(')">(</button>
-    <button class="button" onclick="appendToDisplay(')')">)</button>
-    <button class="button operator" onclick="appendToDisplay('/')">÷</button>
-    <button class="button" onclick="appendToDisplay('7')">7</button>
-    <button class="button" onclick="appendToDisplay('8')">8</button>
-    <button class="button" onclick="appendToDisplay('9')">9</button>
-    <button class="button operator" onclick="appendToDisplay('*')">×</button>
-    <button class="button" onclick="appendToDisplay('4')">4</button>
-    <button class="button" onclick="appendToDisplay('5')">5</button>
-    <button class="button" onclick="appendToDisplay('6')">6</button>
-    <button class="button operator" onclick="appendToDisplay('-')">-</button>
-    <button class="button" onclick="appendToDisplay('1')">1</button>
-    <button class="button" onclick="appendToDisplay('2')">2</button>
-    <button class="button" onclick="appendToDisplay('3')">3</button>
-    <button class="button operator" onclick="appendToDisplay('+')">+</button>
-    <button class="button zero" onclick="appendToDisplay('0')">0</button>
-    <button class="button" onclick="appendToDisplay('.')">.</button>
-    <button class="button equal" onclick="calculate()">=</button>
-</div>
-        <input type="text" id="memo-input" class="memo-input" placeholder="メモを入力...">
-    </div>
-
-    <div class="history">
-        <h2>計算履歴</h2>
-        <ul id="history-list">
-            {% for row in history %}
-            <li>{{ row[1] }} = {{ row[2] }} ({{ row[3] }})</li>
-            {% endfor %}
-        </ul>
+    <div class="container">
+        <div class="calculator">
+            <input type="text" class="display" id="display" readonly>
+            <div class="buttons">
+                <button class="btn">C</button>
+                <button class="btn">(</button>
+                <button class="btn">)</button>
+                <button class="btn operator">÷</button>
+                <button class="btn">7</button>
+                <button class="btn">8</button>
+                <button class="btn">9</button>
+                <button class="btn operator">×</button>
+                <button class="btn">4</button>
+                <button class="btn">5</button>
+                <button class="btn">6</button>
+                <button class="btn operator">-</button>
+                <button class="btn">1</button>
+                <button class="btn">2</button>
+                <button class="btn">3</button>
+                <button class="btn operator">+</button>
+                <button class="btn">0</button>
+                <button class="btn">.</button>
+                <button class="btn equal">=</button>
+            </div>
+            <input type="text" id="memo" class="memo-input" placeholder="メモを入力...">
+        </div>
+	<div class="history-section">
+            <div class="history-header">
+                <h2>計算履歴</h2>
+                <form method="post" action="{{ url_for('calculator.clear_history') }}">
+                    <button type="submit" class="btn-clear">履歴をクリア</button>
+                </form>
+            </div>
+            <ul id="history-list">
+                {% for item in history %}
+                <li>
+                    {{ item[1] }} = {{ item[2] }}
+                    {% if item[3] %}
+                        <div class="memo">メモ: {{ item[3] }}</div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 
     <script>
+        // --- DOM要素の取得 ---
         const display = document.getElementById('display');
         const historyList = document.getElementById('history-list');
-        const memoInput = document.getElementById('memo-input');
-        let currentExpression = '';
-        let isResultDisplayed = false;
+        const memoInput = document.getElementById('memo');
+        const buttons = document.querySelectorAll('.btn');
 
+        // --- 関数の定義 ---
         function appendToDisplay(value) {
-            if (isResultDisplayed) {
-                clearDisplay();
-                isResultDisplayed = false;
-            }
-            if (display.textContent === '0' && !isOperator(value)) {
-                display.textContent = value;
-            } else {
-                display.textContent += value;
-            }
-            currentExpression = display.textContent;
+            display.value += value;
         }
 
         function clearDisplay() {
-            display.textContent = '0';
-            currentExpression = '';
+            display.value = '';
         }
 
-        function isOperator(value) {
-            return ['+', '-', '*', '/'].includes(value);
-        }
+        async function calculateResult() {
+            const expression = display.value;
+            const memo = memoInput.value;
 
-        async function calculate() {
             try {
-                const response = await fetch('/calculate', {
+                const response = await fetch("{{ url_for('calculator.calculate') }}", {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ expression: currentExpression, memo: memoInput.value })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ expression: expression, memo: memo }),
                 });
+
                 const data = await response.json();
 
-                if (response.ok) {
-                    display.textContent = data.result;
-                    isResultDisplayed = true;
-                    updateHistory(currentExpression, data.result, memoInput.value);
-                    memoInput.value = '';
+                if (data.error) {
+                    display.value = data.error;
                 } else {
-                    display.textContent = data.error;
-                    isResultDisplayed = true;
+                    display.value = data.result;
+                    // 履歴を画面の先頭に動的に追加
+                    const newHistoryItem = document.createElement('li');
+                    let historyHtml = `${expression} = ${data.result}`;
+                    if (memo) {
+                        historyHtml += `<div class="memo">メモ: ${memo}</div>`;
+                    }
+                    newHistoryItem.innerHTML = historyHtml;
+                    historyList.prepend(newHistoryItem);
+                    memoInput.value = ''; // メモ欄をクリア
                 }
             } catch (error) {
-                display.textContent = 'Error';
-                isResultDisplayed = true;
+                display.value = 'Error';
             }
         }
-        
-        function updateHistory(expression, result, memo) {
-            const li = document.createElement('li');
-            li.textContent = `${expression} = ${result} (${memo})`;
-            historyList.prepend(li);
-        }
+
+        // --- イベントリスナーの設定 ---
+        // ページの読み込みが完了したら、各ボタンに機能を割り当てる
+        window.onload = function() {
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const value = button.textContent;
+                    if (value === 'C') {
+                        clearDisplay();
+                    } else if (value === '=') {
+                        calculateResult();
+                    } else if (value === '×') {
+                        appendToDisplay('*');
+                    } else if (value === '÷') {
+                        appendToDisplay('/');
+                    }
+                    else {
+                        appendToDisplay(value);
+                    }
+                });
+            });
+        };
     </script>
 </body>
 </html>
